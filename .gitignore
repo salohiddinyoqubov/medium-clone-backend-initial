@@ -112,3 +112,7 @@ tests/.pytest_cache
 logs
 .idea
 .venv
+
+**/migrations/**
+!**/migrations
+!**/migrations/__init__.py
