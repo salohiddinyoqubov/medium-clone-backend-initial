@@ -1,6 +1,7 @@
 from email.policy import default
 from pathlib import Path
 from decouple import config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -9,10 +10,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = config('SECRET_KEY', default="django-insecure-bos)q+o=7(ii#0x_-gjnz16(4$jg81lo1sm+ltk@z%0u20*t%g")
+SECRET_KEY = config(
+    "SECRET_KEY",
+    default="django-insecure-bos)q+o=7(ii#0x_-gjnz16(4$jg81lo1sm+ltk@z%0u20*t%g",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -25,7 +29,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-     'rest_framework',
+    "rest_framework",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -69,13 +74,13 @@ WSGI_APPLICATION = "core.wsgi.application"
 # }
 
 DATABASES = {
-    'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.sqlite3'),
-        'NAME': config('DB_NAME', default='db.sqlite3'),
-        'USER': config('DB_USER', default=''),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default=''),
-        'PORT': config('DB_PORT', default='')
+    "default": {
+        "ENGINE": config("DB_ENGINE", default="django.db.backends.sqlite3"),
+        "NAME": config("DB_NAME", default="db.sqlite3"),
+        "USER": config("DB_USER", default=""),
+        "PASSWORD": config("DB_PASSWORD", default=""),
+        "HOST": config("DB_HOST", default=""),
+        "PORT": config("DB_PORT", default=""),
     }
 }
 
@@ -122,10 +127,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 REST_FRAMEWORK = {
-    'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+    "DATETIME_FORMAT": "%Y-%m-%d %H:%M:%S",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
     ],
 }
+
+
+AUTH_USER_MODEL = "users.CustomUser"
