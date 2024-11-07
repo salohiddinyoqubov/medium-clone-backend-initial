@@ -1,7 +1,7 @@
 import os
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+import uuid
 
 def file_upload(instance, filename):
     """This function is used to upload the user's avatar."""
