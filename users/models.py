@@ -2,6 +2,8 @@ import os
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
+from django_resized import ResizedImageField
+
 
 def file_upload(instance, filename):
     """This function is used to upload the user's avatar."""
@@ -12,7 +14,9 @@ def file_upload(instance, filename):
 
 class CustomUser(AbstractUser):
     middle_name = models.CharField(max_length=30, blank=True, null=True)
-    avatar = models.ImageField(upload_to=file_upload, blank=True)
+    avatar = ResizedImageField(
+        size=[300, 300], crop=["top", "left"], upload_to=file_upload, blank=True
+    )
 
     class Meta:
         db_table = "user"  # database table name

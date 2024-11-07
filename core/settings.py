@@ -141,3 +141,12 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+# Sozlamalarni faylning oxirida qo'shish tavsiya etiladi
+DJANGORESIZED_DEFAULT_SIZE = [1920, 1080]  # Rasmning standart o‘lchami
+DJANGORESIZED_DEFAULT_SCALE = 1  # Rasm o‘lchamini o‘zgartirish darajasi
+DJANGORESIZED_DEFAULT_QUALITY = 80  # Rasm sifatini saqlash darajasi
+DJANGORESIZED_DEFAULT_KEEP_META = True  # O‘lchamni o‘zgartirganda meta ma’lumotlarni saqlash
+DJANGORESIZED_DEFAULT_FORMAT_EXTENSIONS = {'JPEG': ".jpg"}  # Rasm formati
+DJANGORESIZED_DEFAULT_NORMALIZE_ROTATION = True  # Rasm aylanishini normallashtirish
