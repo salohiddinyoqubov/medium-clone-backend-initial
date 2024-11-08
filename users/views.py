@@ -10,10 +10,19 @@ from .serializers import (
     ValidationErrorSerializer,
     TokenResponseSerializer,
 )
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
+@extend_schema_view(
+    post=extend_schema(
+        summary="Sign up a new user",
+        request=UserSerializer,
+        responses={201: UserSerializer, 400: ValidationErrorSerializer},
+    )
+)
 
 # SignUp qilish uchun class
 class SignupView(APIView):
@@ -36,6 +45,17 @@ class SignupView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@extend_schema_view(
+    post=extend_schema(
+        summary="Log in a user",
+        request=LoginSerializer,
+        responses={
+            200: TokenResponseSerializer,
+            400: ValidationErrorSerializer,
+        },
+    )
+)
 
 # Login qilish uchun class
 class LoginView(APIView):
@@ -68,6 +88,12 @@ class LoginView(APIView):
             )
 
 
+@extend_schema_view(
+    get=extend_schema(
+        summary="Get user information",
+        responses={200: UserSerializer, 400: ValidationErrorSerializer},
+    )
+)
 # User malumotlarni olish uchum class
 class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
     http_method_names = [
