@@ -1,4 +1,4 @@
-from rest_framework import status, permissions, generics
+from rest_framework import status, permissions, generics, parsers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
@@ -9,6 +9,7 @@ from .serializers import (
     LoginSerializer,
     ValidationErrorSerializer,
     TokenResponseSerializer,
+    UserUpdateSerializer,
 )
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from django.contrib.auth import get_user_model
@@ -96,14 +97,18 @@ class LoginView(APIView):
 )
 # User malumotlarni olish uchum class
 class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
-    http_method_names = [
-        "get",
-    ]
+    http_method_names = ["get", "patch"]
     queryset = User.objects.filter(is_active=True)
     permission_classes = (IsAuthenticated,)
+    parser_classes = [parsers.MultiPartParser]
 
     def get_object(self):
         return self.request.user
+
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return UserUpdateSerializer
+        return UserSerializer
 
     def get_serializer_class(self):
         return UserSerializer
