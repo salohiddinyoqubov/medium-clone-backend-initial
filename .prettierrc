@@ -8,10 +8,12 @@
     "arrowParens": "always",
     "overrides": [
         {
-            "files": "*.html",
+            "files": "*.py",
             "options": {
-                "parser": "html",
-                "printWidth": 120
+                "parser": "python",
+                "singleQuote": false,
+                "printWidth": 88,
+                "tabWidth": 4
             }
         }
     ]

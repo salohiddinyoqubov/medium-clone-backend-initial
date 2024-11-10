@@ -1,8 +1,8 @@
+from datetime import datetime, timedelta
 from email.policy import default
 from pathlib import Path
-from decouple import config
-from datetime import datetime, timedelta
 
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -181,8 +181,7 @@ DJANGORESIZED_DEFAULT_NORMALIZE_ROTATION = True  # Rasm aylanishini normallashti
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.BasicAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "users.authentications.CustomJWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
