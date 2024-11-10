@@ -110,5 +110,5 @@ class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
             return UserUpdateSerializer
         return UserSerializer
 
-    def get_serializer_class(self):
-        return UserSerializer
+    def patch(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
