@@ -1,7 +1,7 @@
 from email.policy import default
 from pathlib import Path
 from decouple import config
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -247,3 +247,7 @@ CACHES = {
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+
+
+BIRTH_YEAR_MIN = 1950
+BIRTH_YEAR_MAX = datetime.now().year
