@@ -1,9 +1,11 @@
 import random
+from secrets import token_urlsafe
 
 from django.contrib.auth import authenticate, get_user_model, update_session_auth_hash
+from django.contrib.auth.hashers import make_password
 from django_redis import get_redis_connection
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework import generics, parsers, permissions, status
+from rest_framework import exceptions, generics, parsers, permissions, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,15 +13,21 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .enums import TokenType
+from .errors import ACTIVE_USER_NOT_FOUND_ERROR_MSG
 from .serializers import (
     ChangePasswordSerializer,
+    ForgotPasswordRequestSerializer,
+    ForgotPasswordResponseSerializer,
+    ForgotPasswordVerifyRequestSerializer,
+    ForgotPasswordVerifyResponseSerializer,
     LoginSerializer,
+    ResetPasswordResponseSerializer,
     TokenResponseSerializer,
     UserSerializer,
     UserUpdateSerializer,
     ValidationErrorSerializer,
 )
-from .services import SendEmailService, TokenService, UserService
+from .services import OTPService, SendEmailService, TokenService, UserService
 
 User = get_user_model()
 
@@ -108,7 +116,12 @@ class LoginView(APIView):
     get=extend_schema(
         summary="Get user information",
         responses={200: UserSerializer, 400: ValidationErrorSerializer},
-    )
+    ),
+    patch=extend_schema(
+        summary="Update user information",
+        request=UserUpdateSerializer,
+        responses={200: UserUpdateSerializer, 400: ValidationErrorSerializer},
+    ),
 )
 # User malumotlarni olish uchum class
 class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
@@ -121,9 +134,7 @@ class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
         return self.request.user
 
     def get_serializer_class(self):
-        email = self.request.user.email
-        code = random.randint(10000, 99999)
-        SendEmailService.send_email(email, code)
+
         if self.request.method == "PATCH":
             return UserUpdateSerializer
         return UserSerializer
@@ -187,3 +198,113 @@ class ChangePasswordView(APIView):
             return Response(tokens)
         else:
             raise ValidationError("Eski parol xato.")
+
+
+@extend_schema_view(
+    post=extend_schema(
+        summary="Forgot Password",
+        request=ForgotPasswordRequestSerializer,
+        responses={
+            200: ForgotPasswordResponseSerializer,
+            401: ValidationErrorSerializer,
+        },
+    )
+)
+class ForgotPasswordView(generics.CreateAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = ForgotPasswordRequestSerializer
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        users = User.objects.filter(email=email, is_active=True)
+        if not users.exists():
+            raise exceptions.NotFound(ACTIVE_USER_NOT_FOUND_ERROR_MSG)
+
+        otp_code, otp_secret = OTPService.generate_otp(email=email, expire_in=2 * 60)
+
+        try:
+            SendEmailService.send_email(email, otp_code)
+            return Response(
+                {
+                    "email": email,
+                    "otp_secret": otp_secret,
+                }
+            )
+        except Exception:
+            redis_conn = OTPService.get_redis_conn()
+            redis_conn.delete(f"{email}:otp")
+            raise ValidationError("Emailga xabar yuborishda xatolik yuz berdi")
+
+
+@extend_schema_view(
+    post=extend_schema(
+        summary="Forgot Password Verify",
+        request=ForgotPasswordVerifyRequestSerializer,
+        responses={
+            200: ForgotPasswordVerifyResponseSerializer,
+            401: ValidationErrorSerializer,
+        },
+    )
+)
+class ForgotPasswordVerifyView(generics.CreateAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = ForgotPasswordVerifyRequestSerializer
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        redis_conn = OTPService.get_redis_conn()
+        otp_secret = kwargs.get("otp_secret")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        otp_code = serializer.validated_data["otp_code"]
+        email = serializer.validated_data["email"]
+        users = User.objects.filter(email=email, is_active=True)
+        if not users.exists():
+            raise exceptions.NotFound(ACTIVE_USER_NOT_FOUND_ERROR_MSG)
+        OTPService.check_otp(email, otp_code, otp_secret)
+        redis_conn.delete(f"{email}:otp")
+        token_hash = make_password(token_urlsafe())
+        redis_conn.set(token_hash, email, ex=2 * 60 * 60)
+        return Response({"token": token_hash})
+
+
+@extend_schema_view(
+    patch=extend_schema(
+        summary="Reset Password",
+        request=ResetPasswordResponseSerializer,
+        responses={200: TokenResponseSerializer, 401: ValidationErrorSerializer},
+    )
+)
+class ResetPasswordView(generics.UpdateAPIView):
+    serializer_class = ResetPasswordResponseSerializer
+    permission_classes = [permissions.AllowAny]
+    http_method_names = ["patch"]
+    authentication_classes = []
+
+    def patch(self, request, *args, **kwargs):
+        redis_conn = OTPService.get_redis_conn()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token_hash = serializer.validated_data["token"]
+        email = redis_conn.get(token_hash)
+
+        if not email:
+            raise ValidationError("Token yaroqsiz")
+
+        users = User.objects.filter(email=email.decode(), is_active=True)
+        if not users.exists():
+            raise exceptions.NotFound(ACTIVE_USER_NOT_FOUND_ERROR_MSG)
+
+        password = serializer.validated_data["password"]
+        user = users.first()
+        user.set_password(password)
+        user.save()
+
+        update_session_auth_hash(request, user)
+        tokens = UserService.create_tokens(user, is_force_add_to_redis=True)
+        redis_conn.delete(token_hash)
+        return Response(tokens)
