@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from users.errors import BIRTH_YEAR_ERROR_MSG
@@ -105,4 +107,23 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if birth_year is not None:
             if not (settings.BIRTH_YEAR_MIN < birth_year < settings.BIRTH_YEAR_MAX):
                 raise serializers.ValidationError({"birth_year": BIRTH_YEAR_ERROR_MSG})
+        return data
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return value
+
+    def validate(self, data):
+        if data["new_password"] == data["old_password"]:
+            raise serializers.ValidationError(
+                "Yangi va eski parollar bir xil bo'lmasligi kerak"
+            )
         return data

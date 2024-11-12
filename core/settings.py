@@ -3,6 +3,7 @@ from email.policy import default
 from pathlib import Path
 
 from decouple import config
+from django.conf import settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -181,6 +182,7 @@ DJANGORESIZED_DEFAULT_NORMALIZE_ROTATION = True  # Rasm aylanishini normallashti
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "users.authentications.CustomJWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
@@ -226,7 +228,10 @@ SPECTACULAR_SETTINGS = {
     "SECURITY_DEFINITIONS": {
         "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
     },
+    "SWAGGER_UI_DIST": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest",  # default
+    "SWAGGER_UI_FAVICON_HREF": settings.STATIC_URL + "logo.png",
 }
+
 
 REDIS_HOST = config("REDIS_HOST", default="localhost")
 REDIS_PORT = config("REDIS_PORT", default="6379")
@@ -258,4 +263,3 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default="")
 EMAIL_PORT = config("EMAIL_PORT", default="")
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
-    
