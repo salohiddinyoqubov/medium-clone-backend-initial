@@ -3,6 +3,7 @@ from secrets import token_urlsafe
 
 from django.contrib.auth import authenticate, get_user_model, update_session_auth_hash
 from django.contrib.auth.hashers import make_password
+from django.utils.translation import gettext_lazy as _
 from django_redis import get_redis_connection
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import exceptions, generics, parsers, permissions, status
@@ -166,7 +167,7 @@ class LogoutView(generics.GenericAPIView):
             is_force_add_to_redis=True,
         )
         print(token)
-        return Response({"detail": "Mufaqqiyatli chiqildi."})
+        return Response({"detail": _("Mufaqqiyatli chiqildi.")})
 
 
 @extend_schema_view(
@@ -197,7 +198,7 @@ class ChangePasswordView(APIView):
             tokens = UserService.create_tokens(user, is_force_add_to_redis=True)
             return Response(tokens)
         else:
-            raise ValidationError("Eski parol xato.")
+            raise ValidationError(_("Eski parol xato."))
 
 
 @extend_schema_view(
@@ -236,7 +237,7 @@ class ForgotPasswordView(generics.CreateAPIView):
         except Exception:
             redis_conn = OTPService.get_redis_conn()
             redis_conn.delete(f"{email}:otp")
-            raise ValidationError("Emailga xabar yuborishda xatolik yuz berdi")
+            raise ValidationError(_("Emailga xabar yuborishda xatolik yuz berdi"))
 
 
 @extend_schema_view(
@@ -293,7 +294,7 @@ class ResetPasswordView(generics.UpdateAPIView):
         email = redis_conn.get(token_hash)
 
         if not email:
-            raise ValidationError("Token yaroqsiz")
+            raise ValidationError(_("Token yaroqsiz"))
 
         users = User.objects.filter(email=email.decode(), is_active=True)
         if not users.exists():

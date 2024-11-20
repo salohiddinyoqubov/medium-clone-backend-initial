@@ -1,0 +1,97 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-11-20 18:07+0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+#: .\core\settings.py:147
+msgid "English"
+msgstr ""
+
+#: .\core\settings.py:148
+msgid "Uzbek"
+msgstr ""
+
+#: .\core\settings.py:149
+msgid "Russian"
+msgstr ""
+
+#: .\users\authentications.py:27
+msgid "Access tokeni yaroqsiz"
+msgstr ""
+
+#: .\users\authentications.py:40
+msgid "Kirish ma'lumotlari yaroqsiz"
+msgstr ""
+
+#: .\users\errors.py:6
+#, python-brace-format
+msgid ""
+"Tug'ilgan yili {min_year} dan katta va {max_year} dan kichik bo'lishi kerak."
+msgstr ""
+
+#: .\users\errors.py:9
+msgid "Ushbu elektron pochta manzili bilan faol foydalanuvchi topilmadi!"
+msgstr ""
+
+#: .\users\exceptions.py:8
+msgid "OTP verification failed."
+msgstr ""
+
+#: .\users\serializers.py:60
+msgid "Kirish maʼlumotlari notoʻgʻri"
+msgstr ""
+
+#: .\users\serializers.py:63
+msgid "Foydalanuvchi nomi va parol ham talab qilinadi"
+msgstr ""
+
+#: .\users\serializers.py:128
+msgid "Yangi va eski parollar bir xil bo'lmasligi kerak"
+msgstr ""
+
+#: .\users\serializers.py:138
+msgid "Email topilmadi."
+msgstr ""
+
+#: .\users\services.py:118
+msgid "Xizmatimizga xush kelibsiz!"
+msgstr ""
+
+#: .\users\services.py:147
+msgid ""
+"Sizda yaroqli OTP kodingiz bor. {} soniyadan keyin qayta urinib koʻring."
+msgstr ""
+
+#: .\users\services.py:163
+msgid "Yaroqsiz OTP kodi."
+msgstr ""
+
+#: .\users\views.py:170
+msgid "Mufaqqiyatli chiqildi."
+msgstr ""
+
+#: .\users\views.py:201
+msgid "Eski parol xato."
+msgstr ""
+
+#: .\users\views.py:240
+msgid "Emailga xabar yuborishda xatolik yuz berdi"
+msgstr ""
+
+#: .\users\views.py:297
+msgid "Token yaroqsiz"
+msgstr ""

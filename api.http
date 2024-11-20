@@ -1,2 +1,16 @@
 GET http://127.0.0.1:8000/users/me/
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzMxMzg0OTc0LCJpYXQiOjE3MzEzODEzNzQsImp0aSI6IjZiNzNkYTBjNzU4YTQ2MDhhMGQ3NGExMDE4M2VmZjQxIiwidXNlcl9pZCI6MX0.z6YdIw1yYzTIlIvdUkiFV-2XOiKwnFaEjFiJ239gCWA
+
+###
+
+POST /users/login/ HTTP/1.1
+Host: 127.0.0.1:8000
+Accept: application/json
+Content-Type: application/json
+X-CSRFTOKEN: 6fOliI965VgNHop55Ddi5LgQsLpFMsv0Zbol2Dg9oCmsXB1DMU49jlKKBwup09KV
+Accept-Language: en
+
+{
+  "username": "string",
+  "password": "string"
+}
