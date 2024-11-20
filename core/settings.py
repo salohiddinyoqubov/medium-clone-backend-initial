@@ -285,6 +285,3 @@ EMAIL_PORT = config("EMAIL_PORT", default="")
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 
-TRANSLATABLE_MODEL_MODULES = [
-    'users.models',  # App nomingizni yozing
-]
