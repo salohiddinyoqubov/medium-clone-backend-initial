@@ -51,8 +51,8 @@ EXTERNAL_APPS = [
     "rest_framework",  # yangi package ni qo'shib olamiz
     "rest_framework_simplejwt",  # yangi package ni qo'shib olamiz
     "drf_spectacular",
-    "django_redis",
     "modeltranslation",
+    "django_redis",
 ]
 
 LOCAL_APPS = [
@@ -284,3 +284,7 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default="")
 EMAIL_PORT = config("EMAIL_PORT", default="")
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+
+TRANSLATABLE_MODEL_MODULES = [
+    'users.models',  # App nomingizni yozing
+]
