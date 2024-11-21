@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import datetime, timedelta
 from email.policy import default
 from pathlib import Path
@@ -6,6 +7,9 @@ from pathlib import Path
 from decouple import config
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+from loguru import logger
+
+from .custom_logging import InterceptHandler
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -71,6 +75,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middlewares.LogRequestMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -92,6 +97,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "core.wsgi.application"
+
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -285,3 +291,27 @@ EMAIL_PORT = config("EMAIL_PORT", default="")
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 
+
+logger.info(f"Using redis | URL: {REDIS_URL}")
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "intercept": {
+            "()": InterceptHandler,  # Loguru interceptor
+            "level": 0,
+        },
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",  # Foydalanuvchi loglarini faylga yozish
+            "filename": "django.log",
+        },
+    },
+    "loggers": {
+        "": {
+            "handlers": ["intercept", "file"],  # Loguru va fayl loglari
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}
