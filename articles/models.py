@@ -37,5 +37,4 @@ class Article(models.Model):
         return self.title
 
     class Meta:
-        verbose_name = "Article"
-        verbose_name_plural = "Articles"
+        db_table = "article"
