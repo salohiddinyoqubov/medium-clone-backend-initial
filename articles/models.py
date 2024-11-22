@@ -40,3 +40,4 @@ class Article(models.Model):
         db_table = "article"
         verbose_name = "Article"
         verbose_name_plural = "Articles"
+        ordering = ["-created_at"]
