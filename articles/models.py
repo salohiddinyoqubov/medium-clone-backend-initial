@@ -1,3 +1,5 @@
+from tabnanny import verbose
+
 from django.db import models
 
 from users.models import CustomUser
@@ -33,3 +35,7 @@ class Article(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    class Meta:
+        verbose_name = "Article"
+        verbose_name_plural = "Articles"
