@@ -163,3 +163,19 @@ class ResetPasswordResponseSerializer(serializers.Serializer):
         except ValidationError as e:
             raise serializers.ValidationError(e.messages)
         return value
+
+
+class AuthorSerializer(serializers.ModelSerializer):
+
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "middle_name",
+            "email",
+            "avatar",
+        ]

@@ -43,31 +43,31 @@ class CustomLocaleMiddleware:
         return response
 
 
-class LogRequestMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
+# class LogRequestMiddleware:
+#     def __init__(self, get_response):
+#         self.get_response = get_response
 
-    def __call__(self, request):
-        # Mijoz IP manzilini olish
-        ip_address = self.get_client_ip(request)
+#     def __call__(self, request):
+#         # Mijoz IP manzilini olish
+#         ip_address = self.get_client_ip(request)
 
-        # HTTP so'rovni loglash
-        logger.info(f"Request: {request.method} {request.path} | IP: {ip_address}")
+#         # HTTP so'rovni loglash
+#         logger.info(f"Request: {request.method} {request.path} | IP: {ip_address}")
 
-        response = self.get_response(request)
+#         response = self.get_response(request)
 
-        # HTTP javobni loglash
-        logger.info(
-            f"Response: {response.status_code} {response.reason_phrase} "
-            f"for {request.path} | IP: {ip_address}"
-        )
-        return response
+#         # HTTP javobni loglash
+#         logger.info(
+#             f"Response: {response.status_code} {response.reason_phrase} "
+#             f"for {request.path} | IP: {ip_address}"
+#         )
+#         return response
 
-    def get_client_ip(self, request):
-        # Mijozning IP manzilini aniqlash
-        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(",")[0]
-        else:
-            ip = request.META.get("REMOTE_ADDR")
-        return ip
+#     def get_client_ip(self, request):
+#         # Mijozning IP manzilini aniqlash
+#         x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+#         if x_forwarded_for:
+#             ip = x_forwarded_for.split(",")[0]
+#         else:
+#             ip = request.META.get("REMOTE_ADDR")
+#         return ip

@@ -14,3 +14,33 @@ Accept-Language: en
   "username": "string",
   "password": "string"
 }
+
+
+###
+
+POST http://127.0.0.1:8000/articles/
+Content-Type: multipart/form-data
+
+--boundary
+Content-Disposition: form-data; name="title"
+
+Test Article
+--boundary
+Content-Disposition: form-data; name="summary"
+
+2323
+--boundary
+Content-Disposition: form-data; name="content"
+
+213123
+--boundary
+Content-Disposition: form-data; name="topic_ids"
+
+[1, 2]
+--boundary
+Content-Disposition: form-data; name="thumbnail"; filename="thumbnail.jpg"
+Content-Type: image/jpeg
+
+< https://storage.kun.uz/source/10/s7RZIX7vJSbjA5rF7gicmU5yHMem7OS2.jpg
+--boundary--
+

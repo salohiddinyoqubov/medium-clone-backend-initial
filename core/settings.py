@@ -57,10 +57,12 @@ EXTERNAL_APPS = [
     "drf_spectacular",
     "modeltranslation",
     "django_redis",
+    # "loguru",
 ]
 
 LOCAL_APPS = [
     "users",
+    "articles",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + EXTERNAL_APPS + LOCAL_APPS
@@ -75,7 +77,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "core.middlewares.LogRequestMiddleware",
+    # "core.middlewares.LogRequestMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -292,26 +294,4 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 
 
-logger.info(f"Using redis | URL: {REDIS_URL}")
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "intercept": {
-            "()": InterceptHandler,  # Loguru interceptor
-            "level": 0,
-        },
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",  # Foydalanuvchi loglarini faylga yozish
-            "filename": "django.log",
-        },
-    },
-    "loggers": {
-        "": {
-            "handlers": ["intercept", "file"],  # Loguru va fayl loglari
-            "level": "DEBUG",
-            "propagate": True,
-        },
-    },
-}
+# logger.ic

@@ -1,15 +1,14 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import JsonResponse
-from django.urls import path, include
 from django.contrib import admin
+from django.contrib.auth.decorators import user_passes_test
+from django.http import JsonResponse
+from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-
-from django.contrib.auth.decorators import user_passes_test
 
 
 def is_superuser(user):
@@ -21,6 +20,7 @@ def is_superuser(user):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", lambda _: JsonResponse({"detail": "Healthy"}), name="health"),
+    path("", include("articles.urls")),
     path("users/", include("users.urls")),
     path(
         "schema/",
