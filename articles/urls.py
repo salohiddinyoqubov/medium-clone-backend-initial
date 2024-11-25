@@ -2,10 +2,10 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from articles import views
-from articles.views import ArticleView
+from articles.views import ArticlesView
 
 router = DefaultRouter()
-router.register(r"articles", ArticleView, basename="articles")
+router.register(r"articles", ArticlesView, basename="articles")
 
 
 urlpatterns = [
