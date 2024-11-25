@@ -1,5 +1,6 @@
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from articles.models import Article, Topic
 from articles.serializers import (
@@ -15,18 +16,21 @@ class TopicCreateAPIView(generics.CreateAPIView):
 
 
 # Create your views here.
-class ArticleCreateAPIView(generics.CreateAPIView):
+class ArticleView(viewsets.ModelViewSet):
     queryset = Article.objects.all()
-    serializer_class = ArticleCreateSerializer
 
+    def get_serializer_class(self):
+        if self.action == "create":
+            return ArticleCreateSerializer
+        if self.action == "retrieve":
+            return ArticleDetailSerializer
+        return ArticleCreateSerializer
 
-    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         print(22, self.request.user.username)
         serializer.save(author=self.request.user)
-
-
-class ArticleDetailAPIView(generics.RetrieveAPIView):
-    queryset = Article.objects.all()
-    serializer_class = ArticleDetailSerializer

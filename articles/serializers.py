@@ -3,7 +3,7 @@ from rest_framework import serializers
 from users.models import CustomUser
 from users.serializers import AuthorSerializer
 
-from .models import Article, Topic
+from .models import Article, Clap, Topic
 
 
 class TopicSerializer(serializers.ModelSerializer):
@@ -11,6 +11,17 @@ class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
         fields = ["name", "description", "is_active"]
+
+
+class ClapSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Clap
+        fields = [
+            "id",
+            "user",
+            "article",
+        ]
 
 
 class ArticleCreateSerializer(serializers.ModelSerializer):
@@ -41,6 +52,7 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
 class ArticleDetailSerializer(serializers.ModelSerializer):
     author = AuthorSerializer()
     topics = TopicSerializer(many=True)
+    claps = ClapSerializer(many=True)
 
     class Meta:
         model = Article
@@ -49,9 +61,13 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
             "title",
             "summary",
             "topics",
+            "status",
             "content",
             "thumbnail",
             "author",
             "created_at",
             "updated_at",
+            "claps",
+            "views_count",
+            "reads_count",
         ]

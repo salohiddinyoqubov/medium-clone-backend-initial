@@ -24,8 +24,7 @@ class Topic(models.Model):
 class Article(models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
-        APPROVED = "approved", "Approved"
-        REJECTED = "rejected", "Rejected"
+        PUBLISH = "publish", "Publish"
 
     title = models.CharField(max_length=255)
     summary = models.TextField()
@@ -38,6 +37,8 @@ class Article(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     topics = models.ManyToManyField(Topic, related_name="topics")
+    views_count = models.IntegerField(null=True, default=0)
+    reads_count = models.IntegerField(null=True, default=0)
 
     def __str__(self) -> str:
         return self.title
@@ -47,3 +48,17 @@ class Article(models.Model):
         verbose_name = "Article"
         verbose_name_plural = "Articles"
         ordering = ["-created_at"]
+
+
+class Clap(models.Model):
+    article = models.ForeignKey(
+        to=Article, on_delete=models.CASCADE, related_name="claps"
+    )
+    user = models.ForeignKey(to=CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Clap"
+        verbose_name_plural = "Claps"
+
+    def __str__(self):
+        return self.name
