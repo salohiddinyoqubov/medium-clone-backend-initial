@@ -16,7 +16,7 @@ class TopicCreateAPIView(generics.CreateAPIView):
 
 
 # Create your views here.
-class ArticleView(viewsets.ModelViewSet):
+class ArticlesView(viewsets.ModelViewSet):
     queryset = Article.objects.all()
 
     def get_serializer_class(self):
@@ -32,5 +32,4 @@ class ArticleView(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def perform_create(self, serializer):
-        print(22, self.request.user.username)
         serializer.save(author=self.request.user)
