@@ -24,7 +24,9 @@ class ArticleFilter(filters.FilterSet):
     def filter_topic_id(self, queryset, name, value):
         if not value or not value[0].isdigit():
             raise ValidationError(
-                {"error": "Value must be a valid integer for 'topic_id'."}
+                {
+                    name: ["Enter a number."],  # Kalit nomini dinamik tarzda yuboramiz
+                }
             )
         return queryset.filter(topics__id=int(value[0]))
 
