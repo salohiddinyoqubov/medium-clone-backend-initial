@@ -71,3 +71,32 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
             "views_count",
             "reads_count",
         ]
+
+
+class ArticleListSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer()
+    topics = TopicSerializer(many=True)
+    claps = ClapSerializer(required=False, many=True, write_only=True)
+    claps_count = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Article
+        fields = [
+            "id",
+            "title",
+            "summary",
+            "topics",
+            "status",
+            "content",
+            "thumbnail",
+            "author",
+            "created_at",
+            "updated_at",
+            "claps_count",
+            "views_count",
+            "reads_count",
+            "claps",
+        ]
+
+    def get_claps_count(self, obj):
+        return obj.claps.count()

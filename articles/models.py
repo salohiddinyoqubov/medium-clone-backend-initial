@@ -62,3 +62,17 @@ class Clap(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Comment(models.Model):
+    text = models.TextField()
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "comment"
+        verbose_name = "Comment"
+        verbose_name_plural = "Comments"
+        ordering = ["-created_at"]

@@ -57,6 +57,7 @@ EXTERNAL_APPS = [
     "drf_spectacular",
     "modeltranslation",
     "django_redis",
+    "django_filters",
     # "loguru",
 ]
 
@@ -209,6 +210,7 @@ DJANGORESIZED_DEFAULT_NORMALIZE_ROTATION = True  # Rasm aylanishini normallashti
 
 
 REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
