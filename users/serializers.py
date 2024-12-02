@@ -5,7 +5,9 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
+from articles.models import Article
 from users.errors import BIRTH_YEAR_ERROR_MSG
+from users.models import Recommendation
 
 User = get_user_model()
 
@@ -95,14 +97,14 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_birth_year(
-        self, value
+            self, value
     ):  # tug'ilgan yil oralig'ini tekshirish uchun to'rtinchi variant
         if not (settings.BIRTH_YEAR_MIN < value < settings.BIRTH_YEAR_MAX):
             raise serializers.ValidationError(BIRTH_YEAR_ERROR_MSG)
         return value
 
     def validate(
-        self, data
+            self, data
     ):  # tug'ilgan yil oralig'ini tekshirish uchun beshinchi variant
         birth_year = data.get("birth_year")
         if birth_year is not None:
@@ -166,8 +168,6 @@ class ResetPasswordResponseSerializer(serializers.Serializer):
 
 
 class AuthorSerializer(serializers.ModelSerializer):
-
-
     class Meta:
         model = User
         fields = [
@@ -179,3 +179,26 @@ class AuthorSerializer(serializers.ModelSerializer):
             "email",
             "avatar",
         ]
+
+
+class RecommendationSerializer(serializers.ModelSerializer):
+    more_article_id = serializers.PrimaryKeyRelatedField(queryset=Article.objects.all(), source="more_recommended",
+                                                         required=False, many=True)
+    less_article_id = serializers.PrimaryKeyRelatedField(queryset=Article.objects.all(),
+                                                         source="less_recommended", required=False, many=True)
+
+    class Meta:
+        model = Recommendation
+        fields = ["less_article_id", "more_article_id"]
+
+    def validate(self, attrs):
+        if not (attrs.get("more_recommended") or attrs.get("less_recommended")):
+            raise serializers.ValidationError({"error": "more_recommended or less_recommended  required!"})
+        return attrs
+
+    # def create(self, validated_data):
+    #     more_recommended = validated_data.get("more_recommended")
+    #     less_recommended = validated_data.get("less_recommended")
+    #     print(self.context)
+    #
+    #     # recommendation = Recommendation.objects.filter()

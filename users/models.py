@@ -76,3 +76,21 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
+
+class Recommendation(models.Model):
+    more_recommended = models.ManyToManyField(
+        "articles.Article", related_name="articles_more_recommended", blank=True,
+    )
+    less_recommended = models.ManyToManyField(
+        "articles.Article", related_name="articles_less_recommended", blank=True,
+    )
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="user")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "recommendation"
+        verbose_name = "Recommendation"
+        verbose_name_plural = "Recommendations"
+        ordering = ["-created_at"]

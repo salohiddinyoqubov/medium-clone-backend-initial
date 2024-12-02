@@ -53,5 +53,5 @@ def format_record(record: dict) -> str:
 
 
 # Loguru logger sozlamalari
-logger.remove()
-logger.add(sys.stdout, level="DEBUG", backtrace=True, format=format_record)
+# logger.remove()
+# logger.add(sys.stdout, level="DEBUG", backtrace=True, format=format_record)

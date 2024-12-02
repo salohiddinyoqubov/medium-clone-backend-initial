@@ -7,9 +7,9 @@ from pathlib import Path
 from decouple import config
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
-from loguru import logger
+# from loguru import logger
 
-from .custom_logging import InterceptHandler
+# from .custom_logging import InterceptHandler
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -304,3 +304,17 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 
 
 # logger.ic
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}

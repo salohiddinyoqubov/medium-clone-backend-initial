@@ -1,6 +1,11 @@
 from django.urls import path
+from rest_framework.routers import DefaultRouter
+from setuptools.extern import names
 
-from . import views
+from users import views
+#
+# router = DefaultRouter()
+# router.register(r"recommend", views.RecommendationView, basename="recommend")
 
 urlpatterns = [
     path("signup/", views.SignupView.as_view(), name="signup"),
@@ -19,4 +24,5 @@ urlpatterns = [
         name="forgot-verify",
     ),
     path("password/reset/", views.ResetPasswordView.as_view(), name="reset-password"),
+    path("recommend/", views.RecommendationView.as_view(), name='user_recommend')
 ]

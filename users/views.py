@@ -1,4 +1,4 @@
-import random
+import logging
 from secrets import token_urlsafe
 
 from django.contrib.auth import authenticate, get_user_model, update_session_auth_hash
@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .enums import TokenType
+from users.models import Recommendation
 from .errors import ACTIVE_USER_NOT_FOUND_ERROR_MSG
 from .serializers import (
     ChangePasswordSerializer,
@@ -22,13 +22,16 @@ from .serializers import (
     ForgotPasswordVerifyRequestSerializer,
     ForgotPasswordVerifyResponseSerializer,
     LoginSerializer,
+    RecommendationSerializer,
     ResetPasswordResponseSerializer,
     TokenResponseSerializer,
     UserSerializer,
     UserUpdateSerializer,
     ValidationErrorSerializer,
 )
-from .services import OTPService, SendEmailService, TokenService, UserService
+from .services import OTPService, SendEmailService, UserService
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -40,7 +43,6 @@ User = get_user_model()
         responses={201: UserSerializer, 400: ValidationErrorSerializer},
     )
 )
-
 # SignUp qilish uchun class
 class SignupView(APIView):
     serializer_class = UserSerializer
@@ -73,9 +75,14 @@ class SignupView(APIView):
         },
     )
 )
-
 # Login qilish uchun class
 class LoginView(APIView):
+
+    """
+    Log in a user
+
+    """
+
     serializer_class = LoginSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -90,7 +97,6 @@ class LoginView(APIView):
         )
 
         if user is not None:
-
             refresh = RefreshToken.for_user(user)
             access = str(refresh.access_token)
             UserService.create_tokens(
@@ -135,7 +141,6 @@ class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
         return self.request.user
 
     def get_serializer_class(self):
-
         if self.request.method == "PATCH":
             return UserUpdateSerializer
         return UserSerializer
@@ -159,7 +164,6 @@ class LogoutView(generics.GenericAPIView):
 
     @extend_schema(responses=None)
     def post(self, request, *args, **kwargs):
-
         token = UserService.create_tokens(
             request.user,
             access="fake_token",
@@ -309,3 +313,26 @@ class ResetPasswordView(generics.UpdateAPIView):
         tokens = UserService.create_tokens(user, is_force_add_to_redis=True)
         redis_conn.delete(token_hash)
         return Response(tokens)
+
+
+class RecommendationView(generics.CreateAPIView):
+    queryset = Recommendation.objects.all()
+    serializer_class = RecommendationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        logger.debug(f"POST: {request.POST}")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        logger.debug(f"RecommendationView Serializer validated_data: {serializer.validated_data}")
+        less_recommended = serializer.validated_data.get('less_recommended')
+        more_recommended = serializer.validated_data.get('more_recommended')
+
+        recommendation, _ = Recommendation.objects.get_or_create(user=self.request.user)
+        if more_recommended:
+            recommendation.more_recommended.add(more_recommended[0])
+            recommendation.less_recommended.remove(more_recommended[0])
+        if less_recommended:
+            recommendation.less_recommended.add(less_recommended[0])
+            recommendation.more_recommended.remove(less_recommended[0])
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -13,8 +13,8 @@ from drf_spectacular.views import (
 
 def is_superuser(user):
     # return user.is_superuser    # faqat superuserlar ko'ra oladi
-    return user.is_authenticated
-    # return True qilinsa istalgan user kira oladi
+    # return user.is_authenticated
+    return True # qilinsa istalgan user kira oladi
 
 
 urlpatterns = [

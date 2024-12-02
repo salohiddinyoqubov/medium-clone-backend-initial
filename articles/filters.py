@@ -12,6 +12,15 @@ class ArticleFilter(filters.FilterSet):
         method="filter_topic_id", label="Ma’lum bir mavzuga oid maqolalar"
     )
 
+    is_recommend = filters.BooleanFilter(
+        method="filter_is_recommend", label="Eng ko‘p o‘qilgan 2 ta maqola"
+    )
+
+    def filter_is_recommend(self, queryset, name, value):
+        if name == 'is_recommend' and value:
+            return queryset.filter(articles_more_recommended__isnull=False)
+
+
     def filter_get_top_articles(self, queryset, name, value):
         if not value or not value[0].isdigit():
             raise ValidationError(
