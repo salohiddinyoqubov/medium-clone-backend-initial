@@ -77,7 +77,6 @@ class SignupView(APIView):
 )
 # Login qilish uchun class
 class LoginView(APIView):
-
     """
     Log in a user
 
@@ -284,6 +283,9 @@ class ForgotPasswordVerifyView(generics.CreateAPIView):
     )
 )
 class ResetPasswordView(generics.UpdateAPIView):
+
+
+
     serializer_class = ResetPasswordResponseSerializer
     permission_classes = [permissions.AllowAny]
     http_method_names = ["patch"]
@@ -316,6 +318,14 @@ class ResetPasswordView(generics.UpdateAPIView):
 
 
 class RecommendationView(generics.CreateAPIView):
+
+    """
+    RecommendationView
+
+    The function tests the creation of the RecommendationView model.
+
+    """
+
     queryset = Recommendation.objects.all()
     serializer_class = RecommendationSerializer
     permission_classes = [IsAuthenticated]
@@ -324,15 +334,19 @@ class RecommendationView(generics.CreateAPIView):
         logger.debug(f"POST: {request.POST}")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        logger.debug(f"RecommendationView Serializer validated_data: {serializer.validated_data}")
-        less_recommended = serializer.validated_data.get('less_recommended')
-        more_recommended = serializer.validated_data.get('more_recommended')
+        logger.debug(
+            f"RecommendationView Serializer validated_data: {serializer.validated_data}"
+        )
+        less_recommended = serializer.validated_data.get("less_recommended")
+        more_recommended = serializer.validated_data.get("more_recommended")
 
         recommendation, _ = Recommendation.objects.get_or_create(user=self.request.user)
         if more_recommended:
             recommendation.more_recommended.add(more_recommended[0])
             recommendation.less_recommended.remove(more_recommended[0])
+
         if less_recommended:
             recommendation.less_recommended.add(less_recommended[0])
             recommendation.more_recommended.remove(less_recommended[0])
+
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,5 +1,7 @@
+from rest_framework import status
 from django_filters import rest_framework as filters
 from rest_framework.exceptions import ValidationError
+from whitenoise.responders import Response
 
 from .models import Article, Topic
 
@@ -19,6 +21,12 @@ class ArticleFilter(filters.FilterSet):
     def filter_is_recommend(self, queryset, name, value):
         if name == 'is_recommend' and value:
             return queryset.filter(articles_more_recommended__isnull=False)
+        else:
+            raise ValidationError(
+                {
+                    name: ["Only be true"],  # Kalit nomini dinamik tarzda yuboramiz
+                }
+            )
 
 
     def filter_get_top_articles(self, queryset, name, value):
