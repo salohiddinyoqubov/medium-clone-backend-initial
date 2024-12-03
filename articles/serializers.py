@@ -10,7 +10,7 @@ class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Topic
-        fields = ["name", "description", "is_active"]
+        fields = ["id","name", "description", "is_active"]
 
 
 class ClapSerializer(serializers.ModelSerializer):

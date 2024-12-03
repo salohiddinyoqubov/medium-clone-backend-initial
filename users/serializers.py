@@ -182,23 +182,31 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class RecommendationSerializer(serializers.ModelSerializer):
-    more_article_id = serializers.PrimaryKeyRelatedField(queryset=Article.objects.all(), source="more_recommended",
-                                                         required=False, many=True)
-    less_article_id = serializers.PrimaryKeyRelatedField(queryset=Article.objects.all(),
-                                                         source="less_recommended", required=False, many=True)
+    more_article_id = serializers.PrimaryKeyRelatedField(
+        queryset=Article.objects.all(), source="more_recommended", required=False, many=True
+    )
+    less_article_id = serializers.PrimaryKeyRelatedField(
+        queryset=Article.objects.all(), source="less_recommended", required=False, many=True
+    )
 
     class Meta:
         model = Recommendation
         fields = ["less_article_id", "more_article_id"]
 
-    def validate(self, attrs):
-        if not (attrs.get("more_recommended") or attrs.get("less_recommended")):
-            raise serializers.ValidationError({"error": "more_recommended or less_recommended  required!"})
-        return attrs
+    def to_internal_value(self, data):
+        """
+        Convert single integers to lists for `less_article_id` and `more_article_id`.
+        """
+        if isinstance(data.get("less_article_id"), int):
+            data["less_article_id"] = [data["less_article_id"]]
+        if isinstance(data.get("more_article_id"), int):
+            data["more_article_id"] = [data["more_article_id"]]
+        return super().to_internal_value(data)
 
-    # def create(self, validated_data):
-    #     more_recommended = validated_data.get("more_recommended")
-    #     less_recommended = validated_data.get("less_recommended")
-    #     print(self.context)
-    #
-    #     # recommendation = Recommendation.objects.filter()
+    def validate(self, attrs):
+        """
+        Ensure that only one of `less_article_id` or `more_article_id` is provided.
+        """
+        if "more_recommended" in attrs and "less_recommended" in attrs:
+            raise serializers.ValidationError("You can only recommend or unrecommend articles at a time.")
+        return attrs

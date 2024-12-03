@@ -283,8 +283,9 @@ class ForgotPasswordVerifyView(generics.CreateAPIView):
     )
 )
 class ResetPasswordView(generics.UpdateAPIView):
-
-
+    """
+    write documentation
+    """
 
     serializer_class = ResetPasswordResponseSerializer
     permission_classes = [permissions.AllowAny]
@@ -318,35 +319,33 @@ class ResetPasswordView(generics.UpdateAPIView):
 
 
 class RecommendationView(generics.CreateAPIView):
-
-    """
-    RecommendationView
-
-    The function tests the creation of the RecommendationView model.
-
-    """
-
     queryset = Recommendation.objects.all()
     serializer_class = RecommendationSerializer
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        logger.debug(f"POST: {request.POST}")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        logger.debug(
-            f"RecommendationView Serializer validated_data: {serializer.validated_data}"
-        )
-        less_recommended = serializer.validated_data.get("less_recommended")
+
+        # Extract validated data
         more_recommended = serializer.validated_data.get("more_recommended")
+        less_recommended = serializer.validated_data.get("less_recommended")
 
+        # Get or create user's recommendation
         recommendation, _ = Recommendation.objects.get_or_create(user=self.request.user)
-        if more_recommended:
-            recommendation.more_recommended.add(more_recommended[0])
-            recommendation.less_recommended.remove(more_recommended[0])
 
+        # Manage more_recommended articles
+        if more_recommended:
+            for article in more_recommended:
+                if article in recommendation.less_recommended.all():
+                    recommendation.less_recommended.remove(article)
+                recommendation.more_recommended.add(article)
+
+        # Manage less_recommended articles
         if less_recommended:
-            recommendation.less_recommended.add(less_recommended[0])
-            recommendation.more_recommended.remove(less_recommended[0])
+            for article in less_recommended:
+                if article in recommendation.more_recommended.all():
+                    recommendation.more_recommended.remove(article)
+                recommendation.less_recommended.add(article)
 
         return Response(status=status.HTTP_204_NO_CONTENT)

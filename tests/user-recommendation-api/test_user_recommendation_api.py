@@ -99,6 +99,8 @@ def test_articles_more_recommendations(articles_data, api_client, tokens):
     }
 
     response = client.post('/users/recommend/', data=data, format='json')
+    print(response.data)
+    print(data)
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     data = {
