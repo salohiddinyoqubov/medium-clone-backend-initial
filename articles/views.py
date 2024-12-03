@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, viewsets
+from rest_framework import generics, viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -20,11 +20,13 @@ class TopicCreateAPIView(generics.CreateAPIView):
 
 # Create your views here.
 class ArticlesView(viewsets.ModelViewSet):
+
     queryset = Article.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ArticleFilter
 
     def get_serializer_class(self):
+
         if self.action == "create":
             return ArticleCreateSerializer
         if self.action == "retrieve":
@@ -33,12 +35,14 @@ class ArticlesView(viewsets.ModelViewSet):
             return ArticleListSerializer
         return ArticleCreateSerializer
 
-    # def get_queryset(self):
-    #     # API'ga so'rov kelganda "get_top_articles" query parametri borligini tekshiramiz.
-    #     top_articles = self.request.query_params.get("get_top_articles")
-    #     if top_articles:
-    #         return Article.objects.order_by("-views_count")[: int(top_articles)]
-    #     return super().get_queryset()
+    def get_queryset(self):
+        if self.action == "list":
+            queryset = Article.objects.filter(status="publish")
+            return queryset
+        if self.action == "retrieve":
+            queryset = Article.objects.filter(status="publish")
+            return queryset
+
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -47,3 +51,14 @@ class ArticlesView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance:
+            if self.request.user == instance.author:
+                instance.status = "trash"
+                instance.save()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_403_FORBIDDEN, data={"detail": "Not authorized."})

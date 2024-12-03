@@ -61,10 +61,12 @@ def test_article_delete(article_delete_data, api_client, tokens):
     """
     status_code, article_id, user = article_delete_data
 
+
     access, _ = tokens(user)
     client = api_client(token=access)
 
     try:
+
         response = client.delete(f'/articles/{article_id}/')
 
         assert response.status_code == status_code
@@ -72,11 +74,13 @@ def test_article_delete(article_delete_data, api_client, tokens):
         from articles.models import Article
 
         if status_code == 204:
+
             article = Article.objects.filter(id=article_id).first()
             assert article.status == "trash", "Article is not deleted or not moved to trash"
-
             response = client.get(f'/articles/{article_id}/')
+            print(82, response)
             assert response.status_code == 404
-
+            print(response.status_code == 404)
     except Exception:
+
         assert status_code == 403

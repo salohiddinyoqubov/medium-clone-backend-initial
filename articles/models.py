@@ -23,6 +23,7 @@ class Article(models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
         PUBLISH = "publish", "Publish"
+        TRASH = "trash", "Trash"
 
     title = models.CharField(max_length=255)
     summary = models.TextField()
