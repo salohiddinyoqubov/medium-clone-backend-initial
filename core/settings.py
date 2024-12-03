@@ -58,6 +58,8 @@ EXTERNAL_APPS = [
     "modeltranslation",
     "django_redis",
     "django_filters",
+    'ckeditor',
+    'ckeditor_uploader',
     # "loguru",
 ]
 
@@ -316,5 +318,20 @@ LOGGING = {
     "root": {
         "handlers": ["console"],
         "level": "INFO",
+    },
+}
+
+
+# ckeditor
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_IMAGE_BACKEND = "pillow"
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+        "versionCheck": False
     },
 }

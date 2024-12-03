@@ -1,3 +1,4 @@
+from ckeditor.fields import RichTextField
 from django.db import models
 
 from users.models import CustomUser
@@ -5,7 +6,7 @@ from users.models import CustomUser
 
 class Topic(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField()
+    description = RichTextField()
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -27,7 +28,7 @@ class Article(models.Model):
 
     title = models.CharField(max_length=255)
     summary = models.TextField()
-    content = models.TextField()
+    content = RichTextField()
     status = models.CharField(
         max_length=10, choices=Status.choices, default=Status.PENDING
     )
@@ -64,7 +65,7 @@ class Clap(models.Model):
 
 
 class Comment(models.Model):
-    text = models.TextField()
+    text = RichTextField()
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
