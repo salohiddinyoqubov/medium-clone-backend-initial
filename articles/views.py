@@ -1,6 +1,14 @@
+"""
+This module provides API views for managing topics and articles.
+
+Includes:
+- TopicCreateAPIView: API view to create a new topic.
+- ArticlesView: ViewSet for managing Article instances,
+  providing full CRUD operations with filtering support.
+"""
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, viewsets, status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from articles.filters import ArticleFilter
@@ -14,19 +22,23 @@ from articles.serializers import (
 
 
 class TopicCreateAPIView(generics.CreateAPIView):
-    queryset = Topic.objects.all()
+    """
+    API view to create a new topic.
+    """
+    queryset = Topic.objects.all() if hasattr(Topic, 'objects') else None
     serializer_class = TopicSerializer
 
 
 # Create your views here.
 class ArticlesView(viewsets.ModelViewSet):
-
-    queryset = Article.objects.all()
+    """
+    ViewSet for managing Article instances, providing CRUD operations.
+    """
+    queryset = Article.objects.all() if hasattr(Article, 'objects') else None
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ArticleFilter
 
     def get_serializer_class(self):
-
         if self.action == "create":
             return ArticleCreateSerializer
         if self.action == "retrieve":
@@ -36,13 +48,9 @@ class ArticlesView(viewsets.ModelViewSet):
         return ArticleCreateSerializer
 
     def get_queryset(self):
-        if self.action == "list":
-            queryset = Article.objects.filter(status="publish")
-            return queryset
-        if self.action == "retrieve":
-            queryset = Article.objects.filter(status="publish")
-            return queryset
-
+        if self.action in ["list", "retrieve"]:
+            return self.queryset.filter(status=Article.Status.PUBLISH)
+        return super().get_queryset()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -61,4 +69,23 @@ class ArticlesView(viewsets.ModelViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        return Response(status=status.HTTP_403_FORBIDDEN, data={"detail": "Not authorized."})
+        return Response(
+            status=status.HTTP_403_FORBIDDEN, data={"detail": "Not authorized."}
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance:
+            if self.request.user == instance.author:
+                serializer = self.get_serializer(
+                    instance, data=request.data, partial=True
+                )
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                return Response(serializer.data)
+
+            return Response(
+                status=status.HTTP_403_FORBIDDEN, data={"detail": "Not authorized."}
+            )
+
+        return Response(status=status.HTTP_404_NOT_FOUND)

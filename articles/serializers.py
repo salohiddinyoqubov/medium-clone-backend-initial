@@ -1,20 +1,16 @@
 from rest_framework import serializers
 
-from users.models import CustomUser
 from users.serializers import AuthorSerializer
-
 from .models import Article, Clap, Topic
 
 
 class TopicSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Topic
-        fields = ["id","name", "description", "is_active"]
+        fields = ["id", "name", "description", "is_active"]
 
 
 class ClapSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Clap
         fields = [
