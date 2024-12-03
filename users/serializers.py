@@ -183,25 +183,25 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class RecommendationSerializer(serializers.ModelSerializer):
     more_article_id = serializers.PrimaryKeyRelatedField(
-        queryset=Article.objects.all(), source="more_recommended", required=False, many=True
+        queryset=Article.objects.all(), source="more_recommended", required=False
     )
     less_article_id = serializers.PrimaryKeyRelatedField(
-        queryset=Article.objects.all(), source="less_recommended", required=False, many=True
+        queryset=Article.objects.all(), source="less_recommended", required=False
     )
 
     class Meta:
         model = Recommendation
         fields = ["less_article_id", "more_article_id"]
 
-    def to_internal_value(self, data):
-        """
-        Convert single integers to lists for `less_article_id` and `more_article_id`.
-        """
-        if isinstance(data.get("less_article_id"), int):
-            data["less_article_id"] = [data["less_article_id"]]
-        if isinstance(data.get("more_article_id"), int):
-            data["more_article_id"] = [data["more_article_id"]]
-        return super().to_internal_value(data)
+    # def to_internal_value(self, data):
+    #     """
+    #     Convert single integers to lists for `less_article_id` and `more_article_id`.
+    #     """
+    #     if isinstance(data.get("less_article_id"), int):
+    #         data["less_article_id"] = [data["less_article_id"]]
+    #     if isinstance(data.get("more_article_id"), int):
+    #         data["more_article_id"] = [data["more_article_id"]]
+    #     return super().to_internal_value(data)
 
     def validate(self, attrs):
         """
