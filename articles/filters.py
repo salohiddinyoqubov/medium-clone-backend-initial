@@ -28,7 +28,6 @@ class ArticleFilter(filters.FilterSet):
                 }
             )
 
-
     def filter_get_top_articles(self, queryset, name, value):
         if not value or not value[0].isdigit():
             raise ValidationError(
@@ -50,3 +49,5 @@ class ArticleFilter(filters.FilterSet):
     class Meta:
         model = Article
         fields = ["topic_id"]
+
+

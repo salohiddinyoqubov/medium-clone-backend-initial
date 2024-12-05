@@ -19,9 +19,12 @@ def search_data_factory(user_factory, request):
     search_type = request.param
 
     if search_type == "by_topic":
+
         articles = ArticleFactory.create_batch(3, author=user)
+
         for article in articles:
             article.topics.add(topic)
+
         return user, {"search": topic.name}, [article.id for article in articles]
 
     elif search_type == "by_title":

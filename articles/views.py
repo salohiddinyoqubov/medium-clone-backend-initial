@@ -6,8 +6,8 @@ Includes:
 - ArticlesView: ViewSet for managing Article instances,
   providing full CRUD operations with filtering support.
 """
-
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 from rest_framework import generics, status
 from rest_framework.response import Response
 
@@ -38,72 +38,62 @@ class ArticlesView(generics.RetrieveUpdateDestroyAPIView, generics.ListCreateAPI
     View for managing Article instances, providing list, create, retrieve, update, and delete operations.
     """
 
+    queryset = Article.objects.all().order_by("-created_at") if hasattr(Article, "objects") else None
 
-queryset = (
-    Article.objects.all().order_by("-created_at")
-    if hasattr(Article, "objects")
-    else None
-)
-filter_backends = (DjangoFilterBackend,)
-filterset_class = ArticleFilter
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_class = ArticleFilter
 
+    search_fields = ["title", "content", "topics__name", 'summary', ]
 
-def get_serializer_class(self):
-    if self.request.method == "POST":
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return ArticleCreateSerializer
+        if self.request.method == "PATCH":
+            return ArticleDetailSerializer
         return ArticleCreateSerializer
-    if self.request.method == "PATCH":
-        return ArticleDetailSerializer
-    return ArticleCreateSerializer
 
+    def get_queryset(self):
+        if self.request.method in ["GET", "PATCH", "DELETE"]:
+            return self.queryset.filter(status=Article.Status.PUBLISH)
+        return super().get_queryset()
 
-def get_queryset(self):
-    if self.request.method in ["GET", "PATCH", "DELETE"]:
-        return self.queryset.filter(status=Article.Status.PUBLISH)
-    return super().get_queryset()
+    def get(self, request, *args, **kwargs):
+        if "pk" in self.kwargs:
+            return self.retrieve(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
 
-
-def get(self, request, *args, **kwargs):
-    if "pk" in self.kwargs:
-        return self.retrieve(request, *args, **kwargs)
-    return self.list(request, *args, **kwargs)
-
-
-def retrieve(self, request, *args, **kwargs):
-    print(62)
-    instance = self.get_object()
-    serializer = self.get_serializer(instance)
-    return Response(serializer.data)
-
-
-def perform_create(self, serializer):
-    serializer.save(author=self.request.user)
-
-
-def destroy(self, request, *args, **kwargs):
-    self.permission_classes = [OnlyOwnerPermission]
-    self.check_permissions(request)
-    instance = self.get_object()
-    if instance:
-        instance.status = Article.Status.TRASH
-        instance.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-def partial_update(self, request, *args, **kwargs):
-    """
-    Custom partial update method to handle PATCH requests.
-    """
-    self.permission_classes = [OnlyOwnerPermission]
-    self.check_permissions(request)
-    instance = self.get_object()
-    if instance:
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    return Response(status=status.HTTP_404_NOT_FOUND)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        self.permission_classes = [OnlyOwnerPermission]
+        self.check_permissions(request)
+        instance = self.get_object()
+        if instance:
+            instance.status = Article.Status.TRASH
+            instance.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Custom partial update method to handle PATCH requests.
+        """
+        self.permission_classes = [OnlyOwnerPermission]
+        self.check_permissions(request)
+        instance = self.get_object()
+        if instance:
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class TopicFollowView(generics.CreateAPIView, generics.DestroyAPIView):
@@ -117,19 +107,18 @@ class TopicFollowView(generics.CreateAPIView, generics.DestroyAPIView):
     def create(self, request, *args, **kwargs):
         request.data["topic"] = kwargs.get("pk")
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid()
-        if not serializer.is_valid():
-            return Response(data={"detail": "Mavzu berilgan soʻrovga mos kelmaydi."}, status=status.HTTP_404_NOT_FOUND)
-        topic = serializer.validated_data.get("topic")
-        user = request.user
-        topic_follow, create = TopicFollow.objects.get_or_create(topic=topic, user=user)
+        if serializer.is_valid():
+            topic = serializer.validated_data.get("topic")
+            user = request.user
+            topic_follow, created = TopicFollow.objects.get_or_create(topic=topic, user=user)
 
-        if create:
-            return Response(status=status.HTTP_201_CREATED,
-                            data={"detail": f"Siz '{topic_follow.topic.name}' mavzusini kuzatyapsiz"})
-        if topic_follow:
-            return Response(status=status.HTTP_200_OK,
-                            data={"detail": f"Siz allaqachon '{topic_follow.topic.name}' mavzusini kuzatyapsiz"})
+            status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+            detail_msg = (f"Siz '{topic_follow.topic.name}' mavzusini kuzatyapsiz"
+                          if created else
+                          f"Siz allaqachon '{topic_follow.topic.name}' mavzusini kuzatyapsiz")
+            return Response(status=status_code, data={"detail": detail_msg})
+
+        return Response(data={"detail": "Mavzu berilgan soʻrovga mos kelmaydi."}, status=status.HTTP_404_NOT_FOUND)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
