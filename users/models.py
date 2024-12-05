@@ -85,7 +85,7 @@ class Recommendation(models.Model):
     less_recommended = models.ManyToManyField(
         "articles.Article", related_name="articles_less_recommended", blank=True,
     )
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="user")
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="user_recommended_article")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -94,3 +94,5 @@ class Recommendation(models.Model):
         verbose_name = "Recommendation"
         verbose_name_plural = "Recommendations"
         ordering = ["-created_at"]
+
+

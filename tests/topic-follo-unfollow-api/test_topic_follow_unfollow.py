@@ -69,15 +69,20 @@ def test_follow_and_unfollow_topic(topic_follow_data, api_client, tokens):
     """
     Test following and unfollowing a topic.
     """
+
     status_code, topic_id, user = topic_follow_data
 
     access, _ = tokens(user)
     client = api_client(token=access)
 
     response = client.post(f'/articles/topics/{topic_id}/follow/')
+    print(' Response: ' , response)
+    print(80, response.status_code)
+    print(80, status_code)
     assert response.status_code == status_code
 
     if status_code == status.HTTP_201_CREATED:
+
         response = client.post(f'/articles/topics/{topic_id}/follow/')
         assert response.status_code == status.HTTP_200_OK
         assert response.data['detail'].startswith("Siz allaqachon")

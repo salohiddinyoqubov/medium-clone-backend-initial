@@ -76,3 +76,18 @@ class Comment(models.Model):
         verbose_name = "Comment"
         verbose_name_plural = "Comments"
         ordering = ["-created_at"]
+
+
+class TopicFollow(models.Model):
+    topic = models.ForeignKey(
+        Topic, on_delete=models.CASCADE, related_name="topic"
+    )
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="follow_user")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "follow"
+        verbose_name = "Follow"
+        verbose_name_plural = "Follows"
+        ordering = ["-created_at"]

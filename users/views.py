@@ -319,15 +319,18 @@ class ResetPasswordView(generics.UpdateAPIView):
 
 
 class RecommendationView(generics.CreateAPIView):
+    """
+    API view to create and manage Article Recommendations for a user.
+    """
     queryset = Recommendation.objects.all()
     serializer_class = RecommendationSerializer
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        logger.debug(f"POST: {request.POST}")
+        logger.debug("POST: %s", request.POST)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        logger.debug(f"RecommendationView Serializer validated_data: {serializer.validated_data}")
+        logger.debug("RecommendationView Serializer validated_data: %s", serializer.validated_data)
         less_recommended = serializer.validated_data.get('less_recommended')
         more_recommended = serializer.validated_data.get('more_recommended')
         recommendation, _ = Recommendation.objects.get_or_create(user=self.request.user)
@@ -338,3 +341,4 @@ class RecommendationView(generics.CreateAPIView):
             recommendation.less_recommended.add(less_recommended)
             recommendation.more_recommended.remove(less_recommended)
         return Response(status=status.HTTP_204_NO_CONTENT)
+

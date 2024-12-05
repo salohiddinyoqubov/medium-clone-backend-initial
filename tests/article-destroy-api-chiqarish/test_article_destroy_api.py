@@ -68,11 +68,8 @@ def test_article_delete(article_delete_data, api_client, tokens):
     try:
 
         response = client.delete(f'/articles/{article_id}/')
-
         assert response.status_code == status_code
-
         from articles.models import Article
-
         if status_code == 204:
 
             article = Article.objects.filter(id=article_id).first()
@@ -82,5 +79,4 @@ def test_article_delete(article_delete_data, api_client, tokens):
             assert response.status_code == 404
             print(response.status_code == 404)
     except Exception:
-
         assert status_code == 403

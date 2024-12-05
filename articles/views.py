@@ -8,16 +8,16 @@ Includes:
 """
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, viewsets, status
+from rest_framework import generics, status
 from rest_framework.response import Response
 
 from articles.filters import ArticleFilter
-from articles.models import Article, Topic
+from articles.models import Article, Topic, TopicFollow
+from articles.permissions import OnlyOwnerPermission
 from articles.serializers import (
     ArticleCreateSerializer,
     ArticleDetailSerializer,
-    ArticleListSerializer,
-    TopicSerializer,
+    TopicSerializer, TopicFollowSerializer,
 )
 
 
@@ -25,67 +25,124 @@ class TopicCreateAPIView(generics.CreateAPIView):
     """
     API view to create a new topic.
     """
-    queryset = Topic.objects.all() if hasattr(Topic, 'objects') else None
+
+    queryset = (
+        Topic.objects.all().order_by("name") if hasattr(Topic, "objects") else None
+    )
     serializer_class = TopicSerializer
 
 
 # Create your views here.
-class ArticlesView(viewsets.ModelViewSet):
+class ArticlesView(generics.RetrieveUpdateDestroyAPIView, generics.ListCreateAPIView):
     """
-    ViewSet for managing Article instances, providing CRUD operations.
+    View for managing Article instances, providing list, create, retrieve, update, and delete operations.
     """
-    queryset = Article.objects.all() if hasattr(Article, 'objects') else None
-    filter_backends = (DjangoFilterBackend,)
-    filterset_class = ArticleFilter
 
-    def get_serializer_class(self):
-        if self.action == "create":
-            return ArticleCreateSerializer
-        if self.action == "retrieve":
-            return ArticleDetailSerializer
-        if self.action == "list":
-            return ArticleListSerializer
+
+queryset = (
+    Article.objects.all().order_by("-created_at")
+    if hasattr(Article, "objects")
+    else None
+)
+filter_backends = (DjangoFilterBackend,)
+filterset_class = ArticleFilter
+
+
+def get_serializer_class(self):
+    if self.request.method == "POST":
         return ArticleCreateSerializer
+    if self.request.method == "PATCH":
+        return ArticleDetailSerializer
+    return ArticleCreateSerializer
 
-    def get_queryset(self):
-        if self.action in ["list", "retrieve"]:
-            return self.queryset.filter(status=Article.Status.PUBLISH)
-        return super().get_queryset()
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
+def get_queryset(self):
+    if self.request.method in ["GET", "PATCH", "DELETE"]:
+        return self.queryset.filter(status=Article.Status.PUBLISH)
+    return super().get_queryset()
+
+
+def get(self, request, *args, **kwargs):
+    if "pk" in self.kwargs:
+        return self.retrieve(request, *args, **kwargs)
+    return self.list(request, *args, **kwargs)
+
+
+def retrieve(self, request, *args, **kwargs):
+    print(62)
+    instance = self.get_object()
+    serializer = self.get_serializer(instance)
+    return Response(serializer.data)
+
+
+def perform_create(self, serializer):
+    serializer.save(author=self.request.user)
+
+
+def destroy(self, request, *args, **kwargs):
+    self.permission_classes = [OnlyOwnerPermission]
+    self.check_permissions(request)
+    instance = self.get_object()
+    if instance:
+        instance.status = Article.Status.TRASH
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+def partial_update(self, request, *args, **kwargs):
+    """
+    Custom partial update method to handle PATCH requests.
+    """
+    self.permission_classes = [OnlyOwnerPermission]
+    self.check_permissions(request)
+    instance = self.get_object()
+    if instance:
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
 
+    return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class TopicFollowView(generics.CreateAPIView, generics.DestroyAPIView):
+    """
+    Handles the API view for creating topic followers.
+    """
+
+    queryset = TopicFollow.objects.all() if hasattr(TopicFollow, "objects") else None
+    serializer_class = TopicFollowSerializer
+
+    def create(self, request, *args, **kwargs):
+        request.data["topic"] = kwargs.get("pk")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid()
+        if not serializer.is_valid():
+            return Response(data={"detail": "Mavzu berilgan soʻrovga mos kelmaydi."}, status=status.HTTP_404_NOT_FOUND)
+        topic = serializer.validated_data.get("topic")
+        user = request.user
+        topic_follow, create = TopicFollow.objects.get_or_create(topic=topic, user=user)
+
+        if create:
+            return Response(status=status.HTTP_201_CREATED,
+                            data={"detail": f"Siz '{topic_follow.topic.name}' mavzusini kuzatyapsiz"})
+        if topic_follow:
+            return Response(status=status.HTTP_200_OK,
+                            data={"detail": f"Siz allaqachon '{topic_follow.topic.name}' mavzusini kuzatyapsiz"})
+
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(user=self.request.user)
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
+        self.permission_classes = [OnlyOwnerPermission]
+        self.check_permissions(request)
+        instance = TopicFollow.objects.filter(topic_id=kwargs.get("pk"), user=request.user).first()
+
         if instance:
-            if self.request.user == instance.author:
-                instance.status = "trash"
-                instance.save()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        return Response(
-            status=status.HTTP_403_FORBIDDEN, data={"detail": "Not authorized."}
-        )
-
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance:
-            if self.request.user == instance.author:
-                serializer = self.get_serializer(
-                    instance, data=request.data, partial=True
-                )
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                return Response(serializer.data)
-
-            return Response(
-                status=status.HTTP_403_FORBIDDEN, data={"detail": "Not authorized."}
-            )
-
-        return Response(status=status.HTTP_404_NOT_FOUND)
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+            # return Response(status=st atus.HTTP_404_NOT_FOUND,
+            #                 data={"detail": f"Siz '{instance.topic.name}' mavzusini kuzatmaysiz."})
+        return Response(status=status.HTTP_404_NOT_FOUND,
+                        data={"detail": "Hech qanday mavzu berilgan soʻrovga mos kelmaydi."})

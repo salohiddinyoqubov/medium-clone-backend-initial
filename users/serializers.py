@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from articles.models import Article
+from articles.models import Article, Topic
 from users.errors import BIRTH_YEAR_ERROR_MSG
 from users.models import Recommendation
 
@@ -210,3 +210,10 @@ class RecommendationSerializer(serializers.ModelSerializer):
         if "more_recommended" in attrs and "less_recommended" in attrs:
             raise serializers.ValidationError("You can only recommend or unrecommend articles at a time.")
         return attrs
+
+
+
+
+
+
+
